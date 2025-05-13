@@ -1,3 +1,6 @@
+Alexander Trotter 1644272
+Eli Murray 1626960
+
 # REsearch.java
 
 ## Overview
