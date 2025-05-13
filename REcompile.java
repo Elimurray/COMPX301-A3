@@ -1,3 +1,5 @@
+// 1626260 Eli Murray
+
 import java.util.*;
 
 public class REcompile {
@@ -17,12 +19,12 @@ public class REcompile {
                 this.next2 = next2;
             }
 
-            @Override
             public String toString() {
                 return id + "," + type + "," + next1 + "," + next2;
             }
         }
 
+        // Adds a new state and returns its ID
         int addState(String type, int next1, int next2) {
             states.add(new State(stateCount, type, next1, next2));
             return stateCount++;
@@ -41,7 +43,7 @@ public class REcompile {
         try {
             REcompile compiler = new REcompile(args[0]);
             compiler.compile();
-            compiler.printFSM();
+            compiler.printFSM(); // Outputs FSM to stdout
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
@@ -54,9 +56,10 @@ public class REcompile {
         this.fsm = new FSM();
     }
 
+    // Top-level compilation logic
     private void compile() {
-        int start = fsm.addState("BR", -1, -1);
-        int[] result = parseRegexp();
+        int start = fsm.addState("BR", -1, -1); // BR to actual expression
+        int[] result = parseRegexp();           // Compile main regex
         int finalState = fsm.addState("ACCEPT", -1, -1);
         fsm.states.get(start).next1 = result[0];
         fsm.states.get(result[1]).next1 = finalState;
@@ -68,6 +71,7 @@ public class REcompile {
         }
     }
 
+    // Parses an entire regexp, handling alternation (|)
     private int[] parseRegexp() {
         int[] term = parseTerm();
         if (pos < regex.length() && regex.charAt(pos) == '|') {
@@ -83,6 +87,7 @@ public class REcompile {
         return term;
     }
 
+    // Parses sequence (concatenation)
     private int[] parseTerm() {
         int[] factor = parseFactor();
         if (pos < regex.length() && regex.charAt(pos) != ')' && regex.charAt(pos) != '|') {
@@ -93,6 +98,7 @@ public class REcompile {
         return factor;
     }
 
+    // Parses factor + ?, *, +
     private int[] parseFactor() {
         int[] base = parseBase();
         if (pos < regex.length()) {
@@ -123,10 +129,9 @@ public class REcompile {
         return base;
     }
 
+    // Parses a base symbol, escaped character, or group
     private int[] parseBase() {
-        if (pos >= regex.length()) {
-            throw new RuntimeException("Unexpected end of regex");
-        }
+        if (pos >= regex.length()) throw new RuntimeException("Unexpected end of regex");
         char c = regex.charAt(pos++);
         if (c == '(') {
             int[] regexp = parseRegexp();
@@ -143,10 +148,10 @@ public class REcompile {
             int state = fsm.addState(String.valueOf(c), -1, -1);
             return new int[]{state, state};
         } else if (c == '.') {
-            int state = fsm.addState("WC", -1, -1);
+            int state = fsm.addState("WC", -1, -1); // Wildcard match
             return new int[]{state, state};
         } else if (!isSpecial(c)) {
-            int state = fsm.addState(String.valueOf(c), -1, -1);
+            int state = fsm.addState(String.valueOf(c), -1, -1); // Literal character
             return new int[]{state, state};
         } else {
             throw new RuntimeException("Invalid character: " + c);

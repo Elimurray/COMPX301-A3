@@ -1,11 +1,14 @@
+// 1644272 Alexander Trotter
+
 import java.io.*;
 import java.util.*;
 
 public class REsearch {
+    // Inner class to represent a Finite State Machine
     private static class FSM {
         static class State {
             int id;
-            String type;
+            String type;   // State type: character, BR (branch), WC (wildcard), or ACCEPT
             int next1, next2;
 
             State(int id, String type, int next1, int next2) {
@@ -19,6 +22,7 @@ public class REsearch {
         List<State> states = new ArrayList<>();
         int acceptState = -1;
 
+        // Adds a new state to the FSM
         void addState(int id, String type, int next1, int next2) {
             states.add(new State(id, type, next1, next2));
             if (type.equals("ACCEPT")) {
@@ -33,14 +37,15 @@ public class REsearch {
             System.exit(1);
         }
         try {
-            FSM fsm = readFSM();
-            searchFile(args[0], fsm);
+            FSM fsm = readFSM(); // Build FSM from stdin
+            searchFile(args[0], fsm); // Search the file using FSM
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
         }
     }
 
+    // Reads FSM description from stdin
     private static FSM readFSM() throws IOException {
         FSM fsm = new FSM();
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -59,21 +64,23 @@ public class REsearch {
         return fsm;
     }
 
+    // Searches each line of the input file using the FSM
     private static void searchFile(String filename, FSM fsm) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
         while ((line = reader.readLine()) != null) {
             if (matches(line, fsm)) {
-                System.out.println(line);
+                System.out.println(line); // Print matching lines
             }
         }
         reader.close();
     }
 
+    // Checks if any substring of text matches the FSM
     private static boolean matches(String text, FSM fsm) {
         for (int i = 0; i < text.length(); i++) {
             Set<Integer> currentStates = new HashSet<>();
-            addState(0, currentStates, fsm); // start with epsilon closure from state 0
+            addState(0, currentStates, fsm); // Add epsilon closure from start state
 
             for (int j = i; j < text.length(); j++) {
                 char c = text.charAt(j);
@@ -90,10 +97,11 @@ public class REsearch {
 
                 currentStates = new HashSet<>();
                 for (int s : nextStates) {
-                    addState(s, currentStates, fsm); // re-expand BR transitions after char match
+                    addState(s, currentStates, fsm); // Expand epsilon transitions
                 }
             }
 
+            // If any of the final states is ACCEPT, match is found
             for (int stateId : currentStates) {
                 if (stateId == fsm.acceptState) {
                     return true;
@@ -103,7 +111,7 @@ public class REsearch {
         return false;
     }
 
-    // Epsilon transition handling
+    // Recursively adds epsilon transitions (BR states)
     private static void addState(int stateId, Set<Integer> states, FSM fsm) {
         if (stateId == -1 || states.contains(stateId)) return;
         states.add(stateId);
