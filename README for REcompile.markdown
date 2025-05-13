@@ -22,7 +22,7 @@
 2. Run the program with a regex as a command-line argument:
    ```bash
    java REcompile "a(b|c)*"
-   # java REcompile "a(b|c)*" > fsm.txt #to output to a file to be used in REsearch
+   java REcompile "a(b|c)*" > fsm.txt #to output to a file to be used in REsearch
    ```
 3. The program outputs the FSM states to stdout. Example output for `a(b|c)*`:
    ```
